@@ -204,10 +204,21 @@ impl super::Adapter {
             subgroup_min_size: features1.WaveLaneCountMin,
             subgroup_max_size: features1.WaveLaneCountMax,
             transient_saves_memory: false,
-            queue_families: vec![wgt::QueueFamilyInfo {
-                capabilities: wgt::QueueFamilyCapabilities::all(),
-                num_queues: 1,
-            }],
+            queue_families: vec![
+                wgt::QueueFamilyInfo {
+                    capabilities: wgt::QueueFamilyCapabilities::all(),
+                    num_queues: 1,
+                },
+                wgt::QueueFamilyInfo {
+                    capabilities: wgt::QueueFamilyCapabilities::COMPUTE
+                        | wgt::QueueFamilyCapabilities::TRANSFER,
+                    num_queues: 1,
+                },
+                wgt::QueueFamilyInfo {
+                    capabilities: wgt::QueueFamilyCapabilities::TRANSFER,
+                    num_queues: 1,
+                },
+            ],
         };
 
         let mut options = Direct3D12::D3D12_FEATURE_DATA_D3D12_OPTIONS::default();
@@ -952,14 +963,20 @@ impl crate::Adapter for super::Adapter {
         features: wgt::Features,
         limits: &wgt::Limits,
         memory_hints: &wgt::MemoryHints,
-        _queue_family_index: u32,
+        queue_family_index: u32,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
+        let command_list_type = match queue_family_index {
+            0 => Direct3D12::D3D12_COMMAND_LIST_TYPE_DIRECT,
+            1 => Direct3D12::D3D12_COMMAND_LIST_TYPE_COMPUTE,
+            2 => Direct3D12::D3D12_COMMAND_LIST_TYPE_COPY,
+            _ => panic!("invalid queue family index {queue_family_index} for DX12"),
+        };
         let queue: Direct3D12::ID3D12CommandQueue = {
             profiling::scope!("ID3D12Device::CreateCommandQueue");
             unsafe {
                 self.device
                     .CreateCommandQueue(&Direct3D12::D3D12_COMMAND_QUEUE_DESC {
-                        Type: Direct3D12::D3D12_COMMAND_LIST_TYPE_DIRECT,
+                        Type: command_list_type,
                         Priority: Direct3D12::D3D12_COMMAND_QUEUE_PRIORITY_NORMAL.0,
                         Flags: Direct3D12::D3D12_COMMAND_QUEUE_FLAG_NONE,
                         NodeMask: 0,

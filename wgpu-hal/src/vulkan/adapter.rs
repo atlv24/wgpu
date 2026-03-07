@@ -2636,14 +2636,14 @@ impl super::Adapter {
         features: wgt::Features,
         limits: &wgt::Limits,
         memory_hints: &wgt::MemoryHints,
+        queue_family_index: u32,
         callback: Option<Box<super::CreateDeviceCallback<'a>>>,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
         let mut enabled_extensions = self.required_device_extensions(features);
         let mut enabled_phd_features = self.physical_device_features(&enabled_extensions, features);
 
-        let family_index = 0; //TODO
         let family_info = vk::DeviceQueueCreateInfo::default()
-            .queue_family_index(family_index)
+            .queue_family_index(queue_family_index)
             .queue_priorities(&[1.0]);
         let mut family_infos = Vec::from([family_info]);
 
@@ -2714,9 +2714,9 @@ impl crate::Adapter for super::Adapter {
         features: wgt::Features,
         limits: &wgt::Limits,
         memory_hints: &wgt::MemoryHints,
-        _queue_family_index: u32,
+        queue_family_index: u32,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
-        unsafe { self.open_with_callback(features, limits, memory_hints, None) }
+        unsafe { self.open_with_callback(features, limits, memory_hints, queue_family_index, None) }
     }
 
     unsafe fn texture_format_capabilities(
