@@ -952,6 +952,7 @@ impl crate::Adapter for super::Adapter {
         features: wgt::Features,
         limits: &wgt::Limits,
         memory_hints: &wgt::MemoryHints,
+        _queue_family_index: u32,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
         let queue: Direct3D12::ID3D12CommandQueue = {
             profiling::scope!("ID3D12Device::CreateCommandQueue");
@@ -983,10 +984,10 @@ impl crate::Adapter for super::Adapter {
         )?;
         Ok(crate::OpenDevice {
             device,
-            queue: super::Queue {
+            queues: vec![super::Queue {
                 raw: queue,
                 temp_lists: Mutex::new(Vec::new()),
-            },
+            }],
         })
     }
 

@@ -2617,7 +2617,10 @@ impl super::Adapter {
             counters: Default::default(),
         };
 
-        Ok(crate::OpenDevice { device, queue })
+        Ok(crate::OpenDevice {
+            device,
+            queues: vec![queue],
+        })
     }
 
     pub fn texture_format_as_raw(&self, texture_format: wgt::TextureFormat) -> vk::Format {
@@ -2711,6 +2714,7 @@ impl crate::Adapter for super::Adapter {
         features: wgt::Features,
         limits: &wgt::Limits,
         memory_hints: &wgt::MemoryHints,
+        _queue_family_index: u32,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
         unsafe { self.open_with_callback(features, limits, memory_hints, None) }
     }

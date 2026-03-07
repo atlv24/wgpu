@@ -276,15 +276,20 @@ impl<A: hal::Api> Example<A> {
             .expect("Surface doesn't support presentation");
         log::info!("Surface caps: {surface_caps:#?}");
 
-        let hal::OpenDevice { device, queue } = unsafe {
+        let hal::OpenDevice {
+            device,
+            queues: mut queues_vec,
+        } = unsafe {
             adapter
                 .open(
                     features,
                     &wgpu_types::Limits::default(),
                     &wgpu_types::MemoryHints::Performance,
+                    0,
                 )
                 .unwrap()
         };
+        let queue = queues_vec.remove(0);
 
         let window_size: (u32, u32) = window.inner_size().into();
         dbg!(&surface_caps.formats);

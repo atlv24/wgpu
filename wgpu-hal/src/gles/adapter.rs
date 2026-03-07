@@ -1003,6 +1003,7 @@ impl crate::Adapter for super::Adapter {
         features: wgt::Features,
         _limits: &wgt::Limits,
         _memory_hints: &wgt::MemoryHints,
+        _queue_family_index: u32,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
         let gl = &self.shared.context.lock();
         unsafe { gl.pixel_store_i32(glow::UNPACK_ALIGNMENT, 1) };
@@ -1042,7 +1043,7 @@ impl crate::Adapter for super::Adapter {
                 render_doc: Default::default(),
                 counters: Default::default(),
             },
-            queue: super::Queue {
+            queues: vec![super::Queue {
                 shared: Arc::clone(&self.shared),
                 features,
                 draw_fbo: unsafe { gl.create_framebuffer() }
@@ -1054,7 +1055,7 @@ impl crate::Adapter for super::Adapter {
                 temp_query_results: Mutex::new(Vec::new()),
                 draw_buffer_count: AtomicU8::new(1),
                 current_index_buffer: Mutex::new(None),
-            },
+            }],
         })
     }
 

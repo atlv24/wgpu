@@ -766,6 +766,7 @@ pub trait Adapter: WasmNotSendSync {
         features: wgt::Features,
         limits: &wgt::Limits,
         memory_hints: &wgt::MemoryHints,
+        queue_family_index: u32,
     ) -> Result<OpenDevice<Self::A>, DeviceError>;
 
     /// Return the set of supported capabilities for a texture format.
@@ -1988,14 +1989,14 @@ pub struct AcquiredSurfaceTexture<A: Api> {
     pub suboptimal: bool,
 }
 
-/// An open connection to a device and a queue.
+/// An open connection to a device and its queues.
 ///
 /// This can be created from [`Adapter::open`] or backend
 /// specific methods on the backend's [`Instance`] or [`Adapter`].
 #[derive(Debug)]
 pub struct OpenDevice<A: Api> {
     pub device: A::Device,
-    pub queue: A::Queue,
+    pub queues: Vec<A::Queue>,
 }
 
 #[derive(Clone, Debug)]

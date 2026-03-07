@@ -129,15 +129,20 @@ impl<A: hal::Api> Example<A> {
             .ok_or("failed to get surface capabilities")?;
         log::info!("Surface caps: {surface_caps:#?}");
 
-        let hal::OpenDevice { device, queue } = unsafe {
+        let hal::OpenDevice {
+            device,
+            queues: mut queues_vec,
+        } = unsafe {
             adapter
                 .open(
                     wgpu_types::Features::empty(),
                     &wgpu_types::Limits::default(),
                     &wgpu_types::MemoryHints::default(),
+                    0,
                 )
                 .unwrap()
         };
+        let queue = queues_vec.remove(0);
 
         let window_size: (u32, u32) = window.inner_size().into();
         let surface_config = hal::SurfaceConfiguration {

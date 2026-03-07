@@ -267,10 +267,11 @@ impl crate::Adapter for Context {
         features: wgt::Features,
         _limits: &wgt::Limits,
         _memory_hints: &wgt::MemoryHints,
+        _queue_family_index: u32,
     ) -> DeviceResult<crate::OpenDevice<Api>> {
         Ok(crate::OpenDevice {
             device: Context,
-            queue: Context,
+            queues: vec![Context],
         })
     }
     unsafe fn texture_format_capabilities(
