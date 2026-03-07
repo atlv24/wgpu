@@ -146,6 +146,10 @@ pub fn adapter_info() -> wgt::AdapterInfo {
         subgroup_min_size: wgt::MINIMUM_SUBGROUP_MIN_SIZE,
         subgroup_max_size: wgt::MAXIMUM_SUBGROUP_MAX_SIZE,
         transient_saves_memory: false,
+        queue_families: vec![wgt::QueueFamilyInfo {
+            capabilities: wgt::QueueFamilyCapabilities::all(),
+            num_queues: 1,
+        }],
     }
 }
 

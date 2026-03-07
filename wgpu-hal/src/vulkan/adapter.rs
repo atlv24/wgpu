@@ -1889,7 +1889,7 @@ impl super::Instance {
                 .contains(vk::MemoryPropertyFlags::LAZILY_ALLOCATED)
         });
 
-        let info = wgt::AdapterInfo {
+        let mut info = wgt::AdapterInfo {
             name: {
                 phd_capabilities
                     .properties
@@ -1947,6 +1947,7 @@ impl super::Instance {
                 .map(|subgroup_size| subgroup_size.max_subgroup_size)
                 .unwrap_or(wgt::MAXIMUM_SUBGROUP_MAX_SIZE),
             transient_saves_memory: supports_lazily_allocated,
+            queue_families: Vec::new(), // Populated below after queue family enumeration.
         };
         let mut workarounds = super::Workarounds::empty();
         {
@@ -2011,6 +2012,26 @@ impl super::Instance {
             log::debug!("The first queue only exposes {queue_flags:?}");
             return None;
         }
+
+        info.queue_families = queue_families
+            .iter()
+            .map(|family| {
+                let mut capabilities = wgt::QueueFamilyCapabilities::empty();
+                if family.queue_flags.contains(vk::QueueFlags::GRAPHICS) {
+                    capabilities |= wgt::QueueFamilyCapabilities::GRAPHICS;
+                }
+                if family.queue_flags.contains(vk::QueueFlags::COMPUTE) {
+                    capabilities |= wgt::QueueFamilyCapabilities::COMPUTE;
+                }
+                if family.queue_flags.contains(vk::QueueFlags::TRANSFER) {
+                    capabilities |= wgt::QueueFamilyCapabilities::TRANSFER;
+                }
+                wgt::QueueFamilyInfo {
+                    capabilities,
+                    num_queues: family.queue_count,
+                }
+            })
+            .collect();
 
         let (available_features, mut downlevel_flags) = phd_features.to_wgpu(
             &self.shared.raw,

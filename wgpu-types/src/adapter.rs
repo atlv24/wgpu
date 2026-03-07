@@ -1,4 +1,5 @@
 use alloc::string::String;
+use alloc::vec::Vec;
 use core::{fmt, mem};
 
 use crate::{link_to_wgpu_docs, Backend, Backends};
@@ -8,6 +9,38 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(doc)]
 use crate::{Features, TextureUsages};
+
+bitflags::bitflags! {
+    /// Describes the capabilities of a queue family.
+    #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    pub struct QueueFamilyCapabilities: u32 {
+        /// The queue family supports graphics operations (render passes).
+        const GRAPHICS = 1 << 0;
+        /// The queue family supports compute operations (compute passes).
+        const COMPUTE = 1 << 1;
+        /// The queue family supports transfer operations (buffer/texture copies).
+        const TRANSFER = 1 << 2;
+    }
+}
+
+/// Information about a queue family exposed by an adapter.
+///
+/// A queue family is a group of queues that share the same capabilities.
+/// The number of queues that can be created from a family is limited by
+/// [`num_queues`](QueueFamilyInfo::num_queues).
+///
+/// The first queue family (index 0) is always the primary family and supports
+/// all of [`QueueFamilyCapabilities::GRAPHICS`], [`QueueFamilyCapabilities::COMPUTE`],
+/// and [`QueueFamilyCapabilities::TRANSFER`].
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct QueueFamilyInfo {
+    /// The capabilities of this queue family.
+    pub capabilities: QueueFamilyCapabilities,
+    /// The maximum number of queues that can be created from this family.
+    pub num_queues: u32,
+}
 
 /// A set of requested capabilities when choosing a physical adapter.
 ///
@@ -177,6 +210,16 @@ pub struct AdapterInfo {
     pub subgroup_max_size: u32,
     /// If true, adding [`TextureUsages::TRANSIENT`] to a texture will decrease memory usage.
     pub transient_saves_memory: bool,
+    /// The queue families available on this adapter.
+    ///
+    /// The first entry (index 0) is always the primary queue family, which supports
+    /// all of [`QueueFamilyCapabilities::GRAPHICS`], [`QueueFamilyCapabilities::COMPUTE`],
+    /// and [`QueueFamilyCapabilities::TRANSFER`].
+    ///
+    /// Additional entries represent specialized queue families (e.g., compute-only
+    /// or transfer-only) that may allow work to be submitted independently of the
+    /// primary queue.
+    pub queue_families: Vec<QueueFamilyInfo>,
 }
 
 /// Error when [`Instance::request_adapter()`] fails.

@@ -204,6 +204,10 @@ impl crate::Instance for Instance {
                         subgroup_min_size: 4,
                         subgroup_max_size: 64,
                         transient_saves_memory: shared.private_caps.supports_memoryless_storage,
+                        queue_families: vec![wgt::QueueFamilyInfo {
+                            capabilities: wgt::QueueFamilyCapabilities::all(),
+                            num_queues: 1,
+                        }],
                     },
                     features: shared.private_caps.features(),
                     capabilities: shared.private_caps.capabilities(),

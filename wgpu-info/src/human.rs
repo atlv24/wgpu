@@ -102,6 +102,7 @@ fn print_adapter(output: &mut impl io::Write, report: &AdapterReport, idx: usize
         subgroup_min_size,
         subgroup_max_size,
         transient_saves_memory,
+        queue_families,
     } = info;
 
     if matches!(verbosity, PrintingVerbosity::NameOnly) {
@@ -121,6 +122,10 @@ fn print_adapter(output: &mut impl io::Write, report: &AdapterReport, idx: usize
     writeln!(output, "\t     Subgroup Min Size: {subgroup_min_size}")?;
     writeln!(output, "\t     Subgroup Max Size: {subgroup_max_size}")?;
     writeln!(output, "\tTransient Saves Memory: {transient_saves_memory}")?;
+    writeln!(output, "\t       Queue Families:")?;
+    for (i, family) in queue_families.iter().enumerate() {
+        writeln!(output, "\t\t[{i}] {:?} ({} queue{})", family.capabilities, family.num_queues, if family.num_queues == 1 { "" } else { "s" })?;
+    }
     writeln!(output, "\t      WebGPU Compliant: {:?}", downlevel.is_webgpu_compliant())?;
 
     if matches!(verbosity, PrintingVerbosity::Information) {
